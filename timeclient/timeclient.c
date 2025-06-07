@@ -4,13 +4,13 @@
 #include<unistd.h>
 #include<arpa/inet.h>
 
-#define PORT 8080
-#define BUFFER_SIZE 1024
+#define PORT        8080
+#define	MAXLINE		4096
 
 int main() {
     int sock = 0;
     struct sockaddr_in serv_addr;
-    char buffer[BUFFER_SIZE] = {0};
+    char buffer[MAXLINE];
 
 
     if((sock = socket(AF_INET, SOCK_STREAM, 0))<0){
@@ -36,7 +36,7 @@ int main() {
     send(sock, message, strlen(message), 0);
     printf("Message sent to server\n");
 
-    int valread = read(sock, buffer, BUFFER_SIZE);
+    int valread = read(sock, buffer, sizeof(buffer));
     printf("Server response: %s\n", buffer);
 
     close(sock);
