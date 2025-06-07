@@ -22,12 +22,7 @@ int main(int argc, char **argv)
         perror("socket failed");
         exit(EXIT_FAILURE);
     }
-
-    if(setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
-        perror("setsockopt");
-        exit(EXIT_FAILURE);
-    }
-
+    
     bzero(&address, sizeof(address));
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
