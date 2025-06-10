@@ -3,12 +3,34 @@
 #include<string.h>
 #include<unistd.h>
 #include<arpa/inet.h>
+#include<netinet/tcp.h>
 
 #define PORT        8080
 #define	MAXLINE		4096
 
+union val {
+    int i_val;
+    
+} val;
+
+char *(*opt_val_str)(union val *, int);
+
+static char strres[128];
+
+static char	* sock_str_int(union val *ptr, int len);
+
+static char	* sock_str_int(union val *ptr, int len)
+{
+	if (len != sizeof(int))
+		snprintf(strres, sizeof(strres), "size (%d) not sizeof(int)", len);
+	else
+		snprintf(strres, sizeof(strres), "%d", ptr->i_val);
+	return(strres);
+}
+
 int main() {
     int sock = 0;
+    socklen_t len;
     struct sockaddr_in serv_addr;
     char buffer[MAXLINE];
 
@@ -26,10 +48,47 @@ int main() {
         printf("\nInvalid address/ Address not supported \n");
         return -1;
     }
+    len = sizeof(val);
+    if(getsockopt(sock, SOL_SOCKET, SO_RCVBUF, &val,  &len)==-1)
+    {
+        perror("get params failed");
+    } 
+    else
+    {
+        printf("buffer size default = %s\n",  sock_str_int(&val, len));
+    }
+    
+    if(getsockopt(sock, IPPROTO_TCP, TCP_MAXSEG, &val, &len)==-1)
+    {
+        perror("get params failed");
+        return -1;
+    } 
+    else
+    {
+        printf("MSS default = %s\n",  sock_str_int(&val, len));
+    }
 
     if(connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr))<0){
         printf("\nConnection Failed \n");
         return -1;
+    }
+
+    if(getsockopt(sock, SOL_SOCKET, SO_RCVBUF, &val,  &len)==-1){
+        perror("get params failed");
+        return -1;
+    } 
+    else
+    {
+        printf("buffer size  changed = %s\n",  sock_str_int(&val, len));
+    }
+
+    if(getsockopt(sock, IPPROTO_TCP, TCP_MAXSEG, &val,  &len)==-1){
+        perror("get params failed");
+        return -1;
+    } 
+    else
+    {
+        printf("MSS changed = %s\n",  sock_str_int(&val, len));
     }
 
     char *message = "Hello from client";
